@@ -10,8 +10,7 @@ import {
 } from 'vscode';
 import TelemetryReporter from '@vscode/extension-telemetry';
 
-// @ts-ignore
-import elmApp from '../out/elm/StateMachineVSC';
+import { JumpStateMachine } from './state-machine';
 import { LabelEnvironment, Label, Settings } from './label-interface';
 import getWordLabels from './labelers/words';
 import {
@@ -28,7 +27,7 @@ let globalState: any;
 const careerJumpsMadeKey = 'careerJumpsMade';
 const previousVersionKey = 'previousVersion';
 
-const stateMachine = elmApp.Elm.StateMachineVSC.init();
+const stateMachine = new JumpStateMachine();
 
 const getSettings = (): Settings => {
     return {
@@ -52,8 +51,8 @@ const statusBarItem = createStatusBar();
 let allLabels: Array<Label> = new Array<Label>();
 let isSelectionMode: boolean = false;
 
-// Subscribe:
-stateMachine.ports.validKeyEntered.subscribe((keyLabel: string) => {
+// Subscribe to state machine events:
+stateMachine.onValidKeyEntered((keyLabel: string) => {
     // This also broadcasts some empty strings in some cases.  Fine to ignore them.
     if (keyLabel) {
         _clearLabels();
@@ -61,7 +60,7 @@ stateMachine.ports.validKeyEntered.subscribe((keyLabel: string) => {
     }
 });
 
-stateMachine.ports.labelJumped.subscribe((keyLabel: string) => {
+stateMachine.onLabelJumped((keyLabel: string) => {
     const foundLabel = allLabels.find((label) => label.keyLabel === keyLabel);
     if (foundLabel) {
         foundLabel.jump(isSelectionMode);
@@ -90,14 +89,11 @@ stateMachine.ports.labelJumped.subscribe((keyLabel: string) => {
     }
 });
 
-stateMachine.ports.activeChanged.subscribe((active: boolean) => {
-    if (!active) {
+stateMachine.onActiveChanged((model) => {
+    if (!model.active) {
         _exitDebounced();
     }
-});
-
-stateMachine.ports.statusChanged.subscribe((statusMarkup: string) => {
-    setStatusBar(statusBarItem, statusMarkup);
+    setStatusBar(statusBarItem, model.status);
 });
 
 function _renderLabels(enteredKey?: string) {
@@ -148,7 +144,7 @@ function enterJumpMode() {
     commands.executeCommand('setContext', 'jumpy2.jump-mode', true);
 
     _renderLabels();
-    stateMachine.ports.getLabels.send(allLabels.map((label) => label.keyLabel));
+    stateMachine.loadLabels(allLabels.map((label) => label.keyLabel));
 }
 
 function toggle() {
@@ -165,12 +161,12 @@ function toggleSelection() {
 
 function sendKey(key: string) {
     reporter.sendTelemetryEvent('key-pressed', { 'jumpy.keypressed': key });
-    stateMachine.ports.key.send(key.charCodeAt(0));
+    stateMachine.keyEntered(key.charCodeAt(0));
 }
 
 function reset() {
     reporter.sendTelemetryEvent('reset');
-    stateMachine.ports.reset.send(null);
+    stateMachine.reset();
     _clearLabels();
     _renderLabels();
 }
@@ -190,7 +186,7 @@ const _exitDebounced = debounce(_exit, 350, { leading: true, trailing: false });
 
 function exit() {
     reporter.sendTelemetryEvent('exit-manual');
-    stateMachine.ports.exit.send(null);
+    stateMachine.exit();
 }
 
 function showAchievements() {
