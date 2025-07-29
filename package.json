@@ -6,18 +6,18 @@
     "engines": {
         "vscode": "^1.90.0"
     },
-    "publisher": "DavidLGoldberg",
+    "publisher": "TODO: Update with your publisher ID",
     "author": {
         "name": "David L. Goldberg"
     },
     "license": "MIT",
-    "homepage": "https://github.com/DavidLGoldberg/jumpy2/blob/master/README.md",
+    "homepage": "TODO: Update with your fork's URL",
     "repository": {
         "type": "git",
-        "url": "https://github.com/DavidLGoldberg/jumpy2.git"
+        "url": "TODO: Update with your fork's repository URL"
     },
     "bugs": {
-        "url": "https://github.com/DavidLGoldberg/jumpy2/issues"
+        "url": "TODO: Update with your fork's issues URL"
     },
     "icon": "img/logos/Jumpy2-logo-green-black.png",
     "galleryBanner": {
@@ -502,7 +502,7 @@
         "lint": "eslint src --ext ts",
         "test": "vscode-test",
         "test-no-compile": "vscode-test",
-        "deploy": "vsce publish"
+        "deploy": "echo 'DISABLED: Update with your own publishing configuration' && exit 1"
     },
     "devDependencies": {
         "@types/lodash.debounce": "4.0.6",
@@ -554,7 +554,7 @@
     },
     "pricing": "Free",
     "sponsor": {
-        "url": "https://github.com/sponsors/davidlgoldberg"
+        "url": "TODO: Update with your sponsor URL or remove this section"
     },
     "overrides": {
         "tough-cookie": "^4.1.3"

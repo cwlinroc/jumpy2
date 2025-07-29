@@ -1,18 +1,22 @@
-schedules:
-  - cron: '0 18 * * *'
-    displayName: Daily 6PM build
-    branches:
-      include:
-        - main
-    always: true
+# DISABLED: Original author's pipeline 
+# schedules:
+#   - cron: '0 18 * * *'
+#     displayName: Daily 6PM build
+#     branches:
+#       include:
+#         - main
+#     always: true
 
-trigger:
-  branches:
-    include:
-      - main
-  tags:
-    include:
-      - refs/tags/*
+# trigger:
+#   branches:
+#     include:
+#       - main
+#   tags:
+#     include:
+#       - refs/tags/*
+
+# Triggers disabled for forked repository
+trigger: none
 
 pool:
   vmImage: ubuntu-latest
