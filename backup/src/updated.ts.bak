@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { sponsoredBlock } from './sponsored';
+import { sponsoredBlock } from './sponsored.ts.bak';
 
 const changelogPath = path.join(__dirname, '../CHANGELOG.md');
 const changelogContent = fs.readFileSync(changelogPath, 'utf8');

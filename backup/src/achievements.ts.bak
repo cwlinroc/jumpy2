@@ -1,5 +1,5 @@
 // achievements.ts
-import { sponsoredBlock } from './sponsored';
+import { sponsoredBlock } from './sponsored.ts.bak';
 
 interface Achievement {
     level: string;

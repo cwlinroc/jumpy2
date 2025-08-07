@@ -8,21 +8,21 @@ import {
     workspace,
     ViewColumn,
 } from 'vscode';
-import TelemetryReporter from '@vscode/extension-telemetry';
+// import TelemetryReporter from '@vscode/extension-telemetry';
 
 import { JumpStateMachine } from './state-machine';
 import { LabelEnvironment, Label, Settings } from './label-interface';
-import getWordLabels from './labelers/words';
+import { getWordLabels } from './labelers/words';
 import {
     wordLabelBaseDecorationType,
     wordLabelCheckeredDecorationType,
 } from './labelers/wordDecorations';
 import { createStatusBar, setStatusBar } from './statusPrinter';
 import { getKeySet, getAllKeys } from './keys';
-import { achievements, achievementsWebview } from './achievements';
-import { updatesWebview } from './updated';
+// import { achievements, achievementsWebview } from './achievements';
+// import { updatesWebview } from './updated';
 
-let reporter: TelemetryReporter; // Instantiated on activation
+// let reporter: TelemetryReporter; // Instantiated on activation
 let globalState: any;
 const careerJumpsMadeKey = 'careerJumpsMade';
 const previousVersionKey = 'previousVersion';
@@ -67,25 +67,26 @@ stateMachine.onLabelJumped((keyLabel: string) => {
         foundLabel.animateBeacon();
         const currentCount = (globalState.get(careerJumpsMadeKey) || 0) + 1;
         globalState.update(careerJumpsMadeKey, currentCount);
-        reporter.sendTelemetryEvent(
-            `jump${isSelectionMode ? '-selection' : '-normal'}`,
-            {
-                'jumpy.keysjumpedwith': keyLabel,
-                'jumpy.careerjumps': currentCount.toString(),
-            }
-        );
+
+        // reporter.sendTelemetryEvent(
+        //     `jump${isSelectionMode ? '-selection' : '-normal'}`,
+        //     {
+        //         'jumpy.keysjumpedwith': keyLabel,
+        //         'jumpy.careerjumps': currentCount.toString(),
+        //     }
+        // );
 
         // call the `showAchievements` command here when the user has jumped n times found in the `achievements` object
         // but respect the user's desire to disable this first:
-        const achievementsEnabled = workspace
-            .getConfiguration('jumpy2')
-            .get('achievements.active') as boolean;
-        if (achievementsEnabled && currentCount in achievements) {
-            commands.executeCommand('jumpy2.showAchievements');
-            reporter.sendTelemetryEvent('show-achievements-triggered', {
-                'jumpy.careerjumps': currentCount.toString(),
-            });
-        }
+        // const achievementsEnabled = workspace
+        //     .getConfiguration('jumpy2')
+        //     .get('achievements.active') as boolean;
+        // if (achievementsEnabled && currentCount in achievements) {
+        //     commands.executeCommand('jumpy2.showAchievements');
+        //     reporter.sendTelemetryEvent('show-achievements-triggered', {
+        //         'jumpy.careerjumps': currentCount.toString(),
+        //     });
+        // }
     }
 });
 
@@ -109,7 +110,11 @@ function _renderLabels(enteredKey?: string) {
 
     allLabels.length = 0; // Clear the array from previous runs.
 
+
     window.visibleTextEditors.forEach((editor) => {
+
+        const isActiveEditor = editor === window.activeTextEditor;
+
         // Atom architecture (copied here) allows for other label providers:
         const editorLabels = getWordLabels(environment, editor);
         allLabels = [...allLabels, ...editorLabels];
@@ -148,24 +153,24 @@ function enterJumpMode() {
 }
 
 function toggle() {
-    reporter.sendTelemetryEvent('toggle-normal');
+    // reporter.sendTelemetryEvent('toggle-normal');
     isSelectionMode = false;
     enterJumpMode();
 }
 
 function toggleSelection() {
-    reporter.sendTelemetryEvent('toggle-selection');
+    // reporter.sendTelemetryEvent('toggle-selection');
     isSelectionMode = true;
     enterJumpMode();
 }
 
 function sendKey(key: string) {
-    reporter.sendTelemetryEvent('key-pressed', { 'jumpy.keypressed': key });
+    // reporter.sendTelemetryEvent('key-pressed', { 'jumpy.keypressed': key });
     stateMachine.keyEntered(key.charCodeAt(0));
 }
 
 function reset() {
-    reporter.sendTelemetryEvent('reset');
+    // reporter.sendTelemetryEvent('reset');
     stateMachine.reset();
     _clearLabels();
     _renderLabels();
@@ -185,7 +190,7 @@ function _exit() {
 const _exitDebounced = debounce(_exit, 350, { leading: true, trailing: false });
 
 function exit() {
-    reporter.sendTelemetryEvent('exit-manual');
+    // reporter.sendTelemetryEvent('exit-manual');
     stateMachine.exit();
 }
 
@@ -193,9 +198,9 @@ function showAchievements() {
     const careerJumpsMade = (
         globalState.get(careerJumpsMadeKey) || 0
     ).toString();
-    reporter.sendTelemetryEvent('show-achievements', {
-        'jumpy.careerjumps': careerJumpsMade.toString(),
-    });
+    // reporter.sendTelemetryEvent('show-achievements', {
+    //     'jumpy.careerjumps': careerJumpsMade.toString(),
+    // });
 
     const panel = window.createWebviewPanel(
         'jumpy2Achievements',
@@ -207,7 +212,7 @@ function showAchievements() {
         }
     );
 
-    panel.webview.html = achievementsWebview(careerJumpsMade);
+    // panel.webview.html = achievementsWebview(careerJumpsMade);
 }
 
 export function activate(context: ExtensionContext) {
@@ -221,14 +226,14 @@ export function activate(context: ExtensionContext) {
     );
     const { registerCommand } = commands;
     const currentExtensionVersion = context.extension.packageJSON.version;
-    reporter = new TelemetryReporter(
-        '618cee5c-79f0-46c5-a2ab-95f734e163ef' // app insights instrumentation key
-    );
-    subscriptions.push(reporter);
+    // reporter = new TelemetryReporter(
+    //     '618cee5c-79f0-46c5-a2ab-95f734e163ef' // app insights instrumentation key
+    // );
+    // subscriptions.push(reporter);
 
-    reporter.sendTelemetryEvent('activate', {
-        'jumpy.settings': JSON.stringify(workspace.getConfiguration('jumpy2')),
-    });
+    // reporter.sendTelemetryEvent('activate', {
+    //     'jumpy.settings': JSON.stringify(workspace.getConfiguration('jumpy2')),
+    // });
 
     const previousVersion =
         context.globalState.get<string>(previousVersionKey) || '';
@@ -236,7 +241,7 @@ export function activate(context: ExtensionContext) {
         commands.executeCommand('jumpy2.showUpdates');
         // store latest version
         context.globalState.update(previousVersionKey, currentExtensionVersion);
-        reporter.sendTelemetryEvent('show-updates-triggered'); // implicitly has version from 'common'
+        // reporter.sendTelemetryEvent('show-updates-triggered'); // implicitly has version from 'common'
     }
 
     subscriptions.push(
@@ -304,17 +309,17 @@ function isNotableUpdate(previousVersion: string, currentVersion: string) {
 }
 
 function showUpdates() {
-    reporter.sendTelemetryEvent('show-updates');
+    // reporter.sendTelemetryEvent('show-updates');
 
-    const panel = window.createWebviewPanel(
-        'jumpy2Updates',
-        'Jumpy2 Updates',
-        ViewColumn.One,
-        {
-            enableScripts: false,
-            retainContextWhenHidden: false, // technically probably not needed with enableScripts set to false, but leaving here in case + future proofing.
-        }
-    );
+    // const panel = window.createWebviewPanel(
+    //     'jumpy2Updates',
+    //     'Jumpy2 Updates',
+    //     ViewColumn.One,
+    //     {
+    //         enableScripts: false,
+    //         retainContextWhenHidden: false, // technically probably not needed with enableScripts set to false, but leaving here in case + future proofing.
+    //     }
+    // );
 
-    panel.webview.html = updatesWebview();
+    // panel.webview.html = updatesWebview();
 }

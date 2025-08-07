@@ -11,7 +11,7 @@ class WordLabel implements Label {
     settings: Settings | undefined;
     marker!: Range;
 
-    destroy() {}
+    destroy() { }
 
     getDecoration(): any {
         const { lineNumber, column, keyLabel } = this;
@@ -68,7 +68,7 @@ class WordLabel implements Label {
     }
 }
 
-const labeler: Labeler = function (
+const getWordLabels: Labeler = function (
     env: LabelEnvironment,
     editor: TextEditor
 ): Array<WordLabel> {
@@ -115,4 +115,4 @@ function isExtensionPanel(editor: TextEditor): boolean {
     );
 }
 
-export default labeler;
+export { getWordLabels };
