@@ -1,4 +1,4 @@
-import { Selection, TextEditor, window } from 'vscode';
+import { DecorationOptions, Selection, TextEditor, window } from 'vscode';
 import { LabelEnvironment, Label, Labeler, Settings } from '../label-interface';
 import { Range, Position } from 'vscode';
 import getWordBeaconDecoration from './wordBeacons';
@@ -6,14 +6,14 @@ import getWordBeaconDecoration from './wordBeacons';
 class WordLabel implements Label {
     keyLabel!: string;
     textEditor: TextEditor | undefined;
+    settings: Settings | undefined;
     lineNumber!: number;
     column!: number;
-    settings: Settings | undefined;
     marker!: Range;
 
     destroy() { }
 
-    getDecoration(): any {
+    getDecoration(): DecorationOptions {
         const { lineNumber, column, keyLabel } = this;
 
         this.marker = new Range(
@@ -74,32 +74,92 @@ const getWordLabels: Labeler = function (
 ): Array<WordLabel> {
     const usedKeys = env.keys; // Intentionally mutate from calling env
     const labels: Array<WordLabel> = [];
+    const lineNumberJump = env.settings.lineNumberJump;
+    const optimizeEnd = env.settings.optimizeEnd;
+    // const optimizeEnd = true;
+    // const lineNumberJump = true;
+    const useLineNumberJump = lineNumberJump && editor === window.activeTextEditor;
+    const lineSet = new Set<number>();
 
     if (editor && !isExtensionPanel(editor)) {
         const visibleRanges = editor.visibleRanges;
         const document = editor.document;
         visibleRanges.forEach((visibleRange) => {
-            const text = document.getText(visibleRange);
-            const lines = text.split(/\r?\n/);
-            lines.forEach((line, index) => {
-                let word: any;
-                while (
-                    (word = env.settings.wordsPattern.exec(line)) !== null &&
-                    usedKeys.length
-                ) {
-                    const keyLabel = usedKeys.shift();
+            const startLine = visibleRange.start.line;
+            const endLine = visibleRange.end.line;
+            const lines = Array.from({ length: endLine - startLine + 1 }, (_, i) => document.lineAt(i + startLine));
 
-                    const column = word.index;
+            lines.forEach((line) => {
+                const matches = line.text.matchAll(env.settings.wordsPattern);
+
+                const lastColumn = line.text.length;
+
+                for (const match of matches) {
+                    if (usedKeys.length === 0) { break; }
+                    const column = match.index || 0;
+                    if (optimizeEnd && column >= lastColumn - 3) { break; }
+                    if (useLineNumberJump && column < 2) { break; }
+                    const keyLabel = usedKeys.shift();
                     const label = new WordLabel();
                     label.settings = env.settings;
                     label.textEditor = editor;
                     label.keyLabel = keyLabel || '';
-                    label.lineNumber = visibleRange.start.line + index;
+                    label.lineNumber = line.lineNumber;
                     label.column = column;
                     labels.push(label);
                 }
+
+                if (optimizeEnd && line.text.trim().length !== 0 && usedKeys.length !== 0) {
+                    const keyLabel = usedKeys.shift();
+                    const label = new WordLabel();
+                    label.settings = env.settings;
+                    label.textEditor = editor;
+                    label.keyLabel = keyLabel || '';
+                    label.lineNumber = line.lineNumber;
+                    label.column = lastColumn;
+                    labels.push(label);
+                }
+
+                if (useLineNumberJump) {
+                    const lineNumber = (line.lineNumber + 1) % 100;
+                    if (!lineSet.has(lineNumber)) {
+                        lineSet.add(lineNumber);
+                        const keyLabel: string = lineNumber.toString().padStart(2, '0');
+                        const label = new WordLabel();
+                        label.settings = env.settings;
+                        label.textEditor = editor;
+                        label.keyLabel = keyLabel || '';
+                        label.lineNumber = line.lineNumber;
+                        label.column = 0;
+                        labels.push(label);
+                    }
+                }
             });
         });
+
+        // visibleRanges.forEach((visibleRange) => {
+        //     const text = document.getText(visibleRange);
+        //     const lines = text.split(/\r?\n/);
+        //     lines.forEach((line, index) => {
+        //         let word: any;
+        //         while (
+        //             (word = env.settings.wordsPattern.exec(line)) !== null &&
+        //             usedKeys.length
+        //         ) {
+        //             const keyLabel = usedKeys.shift();
+
+        //             const column = word.index;
+        //             const label = new WordLabel();
+        //             label.settings = env.settings;
+        //             label.textEditor = editor;
+        //             label.keyLabel = keyLabel || '';
+        //             label.lineNumber = visibleRange.start.line + index;
+        //             label.column = column;
+        //             labels.push(label);
+        //         }
+        //     });
+        // });
+
     }
     return labels;
 };

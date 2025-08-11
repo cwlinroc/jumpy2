@@ -43,6 +43,12 @@ const getSettings = (): Settings => {
         customKeys: Array.from(
             <string>workspace.getConfiguration('jumpy2').get('customKeys')
         ),
+        lineNumberJump: <boolean>(
+            <boolean | undefined>(workspace.getConfiguration('jumpy2').get('lineNumberJump')) || false
+        ),
+        optimizeEnd: <boolean>(
+            <boolean | undefined>(workspace.getConfiguration('jumpy2').get('optimizeStartEnd')) || false
+        ),
     };
 };
 
@@ -110,11 +116,7 @@ function _renderLabels(enteredKey?: string) {
 
     allLabels.length = 0; // Clear the array from previous runs.
 
-
     window.visibleTextEditors.forEach((editor) => {
-
-        const isActiveEditor = editor === window.activeTextEditor;
-
         // Atom architecture (copied here) allows for other label providers:
         const editorLabels = getWordLabels(environment, editor);
         allLabels = [...allLabels, ...editorLabels];
@@ -258,6 +260,12 @@ export function activate(context: ExtensionContext) {
         ...[...allKeys.lowerCharacters, ...allKeys.upperCharacters].map((chr) =>
             registerCommand(`jumpy2.${chr}`, () => sendKey(chr))
         )
+    );
+
+    subscriptions.push(
+        ...Array.from({ length: 10 }, (_, i) =>
+            registerCommand(`jumpy2.${i}`, () => sendKey((i).toString()))
+        ),
     );
 
     /* NOTE: Effectively I want "all" events.  I don't think such an event exists,
