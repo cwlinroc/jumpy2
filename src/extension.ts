@@ -33,7 +33,7 @@ const getSettings = (): Settings => {
     return {
         // Intentionally not using "pattern" type although it does exist.
         // It didn't facilitate adding in a regex when I tried,
-        // and forced the user to leave the settings UI.
+        // and forced the user to leave the settings UI.kw
         wordsPattern: new RegExp(
             <string | undefined>(
                 workspace.getConfiguration('jumpy2').get('wordPattern')
@@ -47,7 +47,7 @@ const getSettings = (): Settings => {
             <boolean | undefined>(workspace.getConfiguration('jumpy2').get('lineNumberJump')) || false
         ),
         optimizeEnd: <boolean>(
-            <boolean | undefined>(workspace.getConfiguration('jumpy2').get('optimizeStartEnd')) || false
+            <boolean | undefined>(workspace.getConfiguration('jumpy2').get('optimizeEnd')) || false
         ),
     };
 };

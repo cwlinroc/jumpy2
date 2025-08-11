@@ -6,18 +6,17 @@
     "engines": {
         "vscode": "^1.90.0"
     },
-    "publisher": "TODO: Update with your publisher ID",
+    "publisher": "cwlinroc",
     "author": {
         "name": "David L. Goldberg"
     },
     "license": "MIT",
-    "homepage": "TODO: Update with your fork's URL",
     "repository": {
         "type": "git",
-        "url": "TODO: Update with your fork's repository URL"
+        "url": "https://github.com/cwlinroc/jumpy2"
     },
     "bugs": {
-        "url": "TODO: Update with your fork's issues URL"
+        "url": "https://github.com/cwlinroc/jumpy2/issues"
     },
     "icon": "img/logos/Jumpy2-logo-green-black.png",
     "galleryBanner": {
@@ -558,7 +557,7 @@
         "@types/lodash.debounce": "4.0.9",
         "@types/mocha": "10.0.10",
         "@types/node": "24.2.1",
-        "@types/vscode": "1.102.0",
+        "@types/vscode": "1.90.0",
         "@typescript-eslint/eslint-plugin": "8.39.0",
         "@typescript-eslint/parser": "8.39.0",
         "@vscode/test-cli": "0.0.11",
@@ -603,9 +602,6 @@
         "isPreReleaseVersion": false
     },
     "pricing": "Free",
-    "sponsor": {
-        "url": "TODO: Update with your sponsor URL or remove this section"
-    },
     "overrides": {
         "tough-cookie": "^4.1.3"
     }

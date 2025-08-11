@@ -98,7 +98,7 @@ const getWordLabels: Labeler = function (
                     if (usedKeys.length === 0) { break; }
                     const column = match.index || 0;
                     if (optimizeEnd && column >= lastColumn - 3) { break; }
-                    if (useLineNumberJump && column < 2) { break; }
+                    if (useLineNumberJump && column < 2) { continue; }
                     const keyLabel = usedKeys.shift();
                     const label = new WordLabel();
                     label.settings = env.settings;
