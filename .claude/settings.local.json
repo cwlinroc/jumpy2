@@ -4,7 +4,8 @@
       "Bash(npm run compile:*)",
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(npm test)"
     ],
     "deny": []
   }

@@ -158,6 +158,16 @@
                     "type": "boolean",
                     "default": true,
                     "description": "Enable checkered mode to alternate label colors.  Helps to distinguish labels, particularly with agressive regex patterns."
+                },
+                "jumpy2.lineNumberJump": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable line number jumping. When enabled, allows jumping to specific line numbers using two-digit line numbers (works only in active editor)."
+                },
+                "jumpy2.optimizeEnd": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Optimize end-of-line jumping. When enabled, skips words within 3 characters of line end and adds end-of-line labels for non-empty lines."
                 }
             }
         },
