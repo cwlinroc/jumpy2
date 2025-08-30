@@ -30,6 +30,7 @@ const height = lineHeight ? `${lineHeight}px` : width; // Set height based on li
 const commonDecorationOptions = {
     after: {
         margin: `-${borderWidth} 0 0 -${width}`, // I need to adjust the margin to match the widths
+        // margin: `-0.5em 0 -0.5em -0.165em`, // css injection, breaks with golang 
         width,
         height,
         fontWeight: 'bold',
@@ -38,6 +39,7 @@ const commonDecorationOptions = {
     },
     opacity: '0',
     rangeBehavior: DecorationRangeBehavior.ClosedClosed,
+    // textDecoration: "none; position: absolute; z-index: 10;" // css injection, breaks with golang 
 };
 const wordLabelBaseDecorationType = window.createTextEditorDecorationType({
     ...commonDecorationOptions,
