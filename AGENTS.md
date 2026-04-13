@@ -20,7 +20,10 @@
 - `.vscodeignore` excludes `src/**` and `out/test/**`, so packaged VSIX contents must already be in runtime-ready files under `out/`.
 - There are no checked-in CI workflows under `.github/workflows`; local npm scripts are the source of truth.
 
+## Design Decisions
+- `StateModel.status` (in `src/state-machine.ts`) is intentionally kept even though the status bar was removed. Removing it would cascade into refactoring the state machine and all its tests for no functional gain. The field still drives `'Jump Mode!'` / `'No Match!'` / key-entered state tracking internally, and tests assert on it.
+
 ## Test Notes
 - Most tests in `src/test/suite/` are extension-host integration tests, not pure unit tests. They open fixtures from `src/test/fixtures/`, change zoom/layout, and rely on explicit waits.
-- `src/test/suite/largefile.test.ts` is skipped. `src/test/suite/status.test.ts` is unfinished. A green run is useful but not exhaustive.
+- `src/test/suite/largefile.test.ts` is skipped. A green run is useful but not exhaustive.
 - If you change `customKeys`, `lineNumberJump`, `optimizeEnd`, visible-editor handling, or jump-mode exit behavior, update both the focused state-machine tests and the affected extension-host tests.

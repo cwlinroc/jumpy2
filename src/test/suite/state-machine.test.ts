@@ -43,7 +43,7 @@ suite('State Machine Test Suite', () => {
             
             const state = stateMachine.getState();
             assert.strictEqual(state.keysEntered, '');
-            assert.strictEqual(state.status, 'No Match! 😞');
+            assert.strictEqual(state.status, 'No Match!');
             assert.strictEqual(state.active, true);
         });
 

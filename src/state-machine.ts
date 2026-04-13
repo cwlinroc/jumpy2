@@ -56,7 +56,7 @@ export class JumpStateMachine {
     }
 
     private setNoMatchStatus(): string {
-        return 'No Match! 😞';
+        return 'No Match!';
     }
 
     private addKeyToStatus(keyEntered: string): string {

@@ -189,10 +189,6 @@
                 "title": "Jumpy: Exit"
             },
             {
-                "command": "jumpy2.showAchievements",
-                "title": "Jumpy: Show Jumpy Achievements (career jumps)"
-            },
-            {
                 "command": "jumpy2.showUpdates",
                 "title": "Jumpy: Show Updates"
             }
@@ -566,7 +562,6 @@
     "devDependencies": {
         "@types/lodash.debounce": "4.0.9",
         "@types/lodash.range": "3.2.9",
-        "@types/lodash.sample": "4.2.9",
         "@types/mocha": "10.0.10",
         "@types/node": "24.10.1",
         "@types/vscode": "1.90.0",
@@ -585,7 +580,6 @@
     "dependencies": {
         "lodash.debounce": "4.0.8",
         "lodash.range": "3.2.0",
-        "lodash.sample": "4.2.1",
         "moize": "6.1.6"
     },
     "nyc": {

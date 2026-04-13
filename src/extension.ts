@@ -6,7 +6,6 @@ import {
     ExtensionContext,
     window,
     workspace,
-    ViewColumn,
 } from 'vscode';
 // import TelemetryReporter from '@vscode/extension-telemetry';
 
@@ -17,14 +16,12 @@ import {
     wordLabelBaseDecorationType,
     wordLabelCheckeredDecorationType,
 } from './labelers/wordDecorations';
-import { createStatusBar, setStatusBar } from './statusPrinter';
 import { getKeySet, getAllKeys } from './keys';
 // import { achievements, achievementsWebview } from './achievements';
 // import { updatesWebview } from './updated';
 
 // let reporter: TelemetryReporter; // Instantiated on activation
 let globalState: any;
-const careerJumpsMadeKey = 'careerJumpsMade';
 const previousVersionKey = 'previousVersion';
 
 const stateMachine = new JumpStateMachine();
@@ -52,8 +49,6 @@ const getSettings = (): Settings => {
     };
 };
 
-const statusBarItem = createStatusBar();
-
 let allLabels: Array<Label> = new Array<Label>();
 let isSelectionMode: boolean = false;
 
@@ -71,28 +66,6 @@ stateMachine.onLabelJumped((keyLabel: string) => {
     if (foundLabel) {
         foundLabel.jump(isSelectionMode);
         foundLabel.animateBeacon();
-        const currentCount = (globalState.get(careerJumpsMadeKey) || 0) + 1;
-        globalState.update(careerJumpsMadeKey, currentCount);
-
-        // reporter.sendTelemetryEvent(
-        //     `jump${isSelectionMode ? '-selection' : '-normal'}`,
-        //     {
-        //         'jumpy.keysjumpedwith': keyLabel,
-        //         'jumpy.careerjumps': currentCount.toString(),
-        //     }
-        // );
-
-        // call the `showAchievements` command here when the user has jumped n times found in the `achievements` object
-        // but respect the user's desire to disable this first:
-        // const achievementsEnabled = workspace
-        //     .getConfiguration('jumpy2')
-        //     .get('achievements.active') as boolean;
-        // if (achievementsEnabled && currentCount in achievements) {
-        //     commands.executeCommand('jumpy2.showAchievements');
-        //     reporter.sendTelemetryEvent('show-achievements-triggered', {
-        //         'jumpy.careerjumps': currentCount.toString(),
-        //     });
-        // }
     }
 });
 
@@ -100,7 +73,6 @@ stateMachine.onActiveChanged((model) => {
     if (!model.active) {
         _exitDebounced();
     }
-    setStatusBar(statusBarItem, model.status);
 });
 
 function _renderLabels(enteredKey?: string) {
@@ -196,33 +168,11 @@ function exit() {
     stateMachine.exit();
 }
 
-function showAchievements() {
-    const careerJumpsMade = (
-        globalState.get(careerJumpsMadeKey) || 0
-    ).toString();
-    // reporter.sendTelemetryEvent('show-achievements', {
-    //     'jumpy.careerjumps': careerJumpsMade.toString(),
-    // });
-
-    const panel = window.createWebviewPanel(
-        'jumpy2Achievements',
-        'Jumpy2 Achievements',
-        ViewColumn.One,
-        {
-            enableScripts: false,
-            retainContextWhenHidden: false, // technically probably not needed with enableScripts set to false, but leaving here in case + future proofing.
-        }
-    );
-
-    // panel.webview.html = achievementsWebview(careerJumpsMade);
-}
-
 export function activate(context: ExtensionContext) {
     globalState = context.globalState; // stored at a more global scope for methods without context :\
-    globalState.setKeysForSync([careerJumpsMadeKey, previousVersionKey]);
+    globalState.setKeysForSync([previousVersionKey]);
     const { subscriptions } = context;
     subscriptions.push(
-        statusBarItem,
         wordLabelBaseDecorationType,
         wordLabelCheckeredDecorationType
     );
@@ -251,7 +201,6 @@ export function activate(context: ExtensionContext) {
         registerCommand('jumpy2.toggleSelection', toggleSelection),
         registerCommand('jumpy2.reset', reset),
         registerCommand('jumpy2.exit', exit),
-        registerCommand('jumpy2.showAchievements', showAchievements),
         registerCommand('jumpy2.showUpdates', showUpdates)
     );
 
