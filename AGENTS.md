@@ -1,5 +1,12 @@
 # AGENTS.md
 
+Keep this file focused on non-obvious agent guidance. For user-facing behavior and fork context, link to existing docs instead of restating them.
+
+## Relevant Docs
+- `README.md` covers the fork-specific product notes and points back to the upstream project documentation.
+- `package.json` is the source of truth for scripts, activation events, contributes metadata, and the runtime bundle path.
+- `.vscode-test.mjs` is the source of truth for the compiled test glob consumed by `vscode-test`.
+
 ## Repo Shape
 - Single-package VS Code extension. Runtime entrypoint is `src/extension.ts`; the extension manifest loads `out/extension.js` via `package.json.main`.
 - Keep jump-mode state in `src/state-machine.ts`. `src/extension.ts` is the wiring layer for commands, VS Code events, decorations, and the state machine.
@@ -9,11 +16,17 @@
 ## Verified Commands
 - `pnpm run compile` is the canonical full build: `tsc --noEmit` + `eslint` + `node esbuild.js`, and it writes the real runtime bundle to `out/extension.js`.
 - `pnpm run watch` is the real dev watch flow. It runs `watch:tsc` plus `watch:esbuild`, and `watch:esbuild` also goes through `node esbuild.js --watch`.
+- `pnpm run watch-tests` continuously compiles the extension and tests to `out/**`; use it when iterating on extension-host tests that run against compiled files.
 - `pnpm run vscode:prepublish` now goes through `node esbuild.js --production`, so the package step emits the same `out/extension.js` bundle that the manifest loads.
 - `pnpm run compile-tests` writes compiled tests to `out/test/**`.
 - `.vscode-test.mjs` points the test runner at `out/test/**/*.test.js`.
 - `pnpm run test` is the safe end-to-end test command because `pretest` already runs `compile-tests`, `compile`, and `lint` first.
 - `pnpm run test-no-compile` still launches `vscode-test`; use it only after the compiled outputs in `out/` and `out/test/` already exist.
+
+## Validation Workflow
+- Prefer the narrowest check that can falsify the change: `pnpm run check-types`, `pnpm run lint`, or `pnpm run compile-tests` before the full test suite.
+- Use `pnpm run test-no-compile` after a successful compile when you only need to rerun the VS Code extension-host tests.
+- Use `pnpm run test` when you need the safe full path that rebuilds and relints first.
 
 ## Gotchas
 - `pnpm run esbuild`, `pnpm run esbuild-watch`, and `pnpm run vscode:prepublish` are all thin wrappers around `node esbuild.js`, so `out/extension.js` is the only runtime bundle path that should matter.
