@@ -12,19 +12,14 @@ fi
 echo "installing packages"
 pnpm install --frozen-lockfile
 
+echo "Building extension..."
+pnpm run compile
+
 echo "Packaging extension..."
 npx @vscode/vsce package --no-dependencies
-if [ $? -ne 0 ]; then
-    echo "ERROR: vsce package command failed!"
-    exit 1
-fi
 
 echo "Installing extension $extension_name..."
 code --install-extension "$extension_name"
-if [ $? -ne 0 ]; then
-    echo "ERROR: code --install-extension command failed!"
-    exit 1
-fi
 
 rm "$extension_name"
 

@@ -9,13 +9,14 @@
 ## Verified Commands
 - `pnpm run compile` is the canonical full build: `tsc --noEmit` + `eslint` + `node esbuild.js`, and it writes the real runtime bundle to `out/extension.js`.
 - `pnpm run watch` is the real dev watch flow. It runs `watch:tsc` plus `watch:esbuild`, and `watch:esbuild` also goes through `node esbuild.js --watch`.
+- `pnpm run vscode:prepublish` now goes through `node esbuild.js --production`, so the package step emits the same `out/extension.js` bundle that the manifest loads.
 - `pnpm run compile-tests` writes compiled tests to `out/test/**`.
 - `.vscode-test.mjs` points the test runner at `out/test/**/*.test.js`.
 - `pnpm run test` is the safe end-to-end test command because `pretest` already runs `compile-tests`, `compile`, and `lint` first.
 - `pnpm run test-no-compile` still launches `vscode-test`; use it only after the compiled outputs in `out/` and `out/test/` already exist.
 
 ## Gotchas
-- `pnpm run esbuild`, `pnpm run esbuild-watch`, and `pnpm run vscode:prepublish` still use `esbuild-base` with `--outfile=out/main.js`. That does not match `package.json.main` (`out/extension.js`). Prefer `pnpm run compile` / `node esbuild.js` unless you are fixing this script split.
+- `pnpm run esbuild`, `pnpm run esbuild-watch`, and `pnpm run vscode:prepublish` are all thin wrappers around `node esbuild.js`, so `out/extension.js` is the only runtime bundle path that should matter.
 - `pnpm run deploy` is intentionally disabled.
 - `.vscodeignore` excludes `src/**` and `out/test/**`, so packaged VSIX contents must already be in runtime-ready files under `out/`.
 - There are no checked-in CI workflows under `.github/workflows`; local pnpm scripts are the source of truth.
