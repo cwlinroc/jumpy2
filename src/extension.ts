@@ -19,7 +19,6 @@ import { getKeySet, getAllKeys } from './keys';
 // import { updatesWebview } from './updated';
 
 // let reporter: TelemetryReporter; // Instantiated on activation
-let globalState: any;
 const previousVersionKey = 'previousVersion';
 
 const stateMachine = new JumpStateMachine();
@@ -103,9 +102,11 @@ function _renderLabels(enteredKey?: string) {
                 if (index % 2 === 0) {
                     baseDecorations.push(decoration);
                 } else {
-                    workspace.getConfiguration('jumpy2').get('checkered.active')
-                        ? checkeredDecorations.push(decoration)
-                        : baseDecorations.push(decoration);
+                    if (workspace.getConfiguration('jumpy2').get('checkered.active')) {
+                        checkeredDecorations.push(decoration);
+                    } else {
+                        baseDecorations.push(decoration);
+                    }
                 }
             });
 
@@ -175,8 +176,7 @@ function exit() {
 }
 
 export function activate(context: ExtensionContext) {
-    globalState = context.globalState; // stored at a more global scope for methods without context :\
-    globalState.setKeysForSync([previousVersionKey]);
+    context.globalState.setKeysForSync([previousVersionKey]);
     const { subscriptions } = context;
     subscriptions.push(
         wordLabelBaseDecorationType,
@@ -261,10 +261,10 @@ function isNotableUpdate(previousVersion: string, currentVersion: string) {
         return true;
     }
 
-    const [previousMajor, previousMinor, previousPatch] = previousVersion
+    const [previousMajor, previousMinor] = previousVersion
         .split('.')
         .map(Number);
-    const [currentMajor, currentMinor, currentPatch] = currentVersion
+    const [currentMajor, currentMinor] = currentVersion
         .split('.')
         .map(Number);
 

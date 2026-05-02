@@ -1,9 +1,8 @@
 import path from 'path';
 import assert from 'assert';
 import { after, afterEach, before, beforeEach } from 'mocha';
-import { TextEditor } from 'vscode';
 
-import { commands, Selection, Position, Uri, window } from 'vscode';
+import { commands, Selection, Uri, window } from 'vscode';
 import { getWordLabels } from '../../labelers/words';
 import { LabelEnvironment, Settings } from '../../label-interface';
 
@@ -30,7 +29,7 @@ const fixtureFile = path.resolve(
 
 suite('New Features Test Suite', function () {
     this.timeout(ONE_MIN);
-    
+
     before(async function () {
         window.showInformationMessage('Start new features tests.');
 
@@ -60,7 +59,7 @@ suite('New Features Test Suite', function () {
         await wait();
     });
 
-    afterEach(async function () {});
+    afterEach(async function () { });
 
     suite('LineNumberJump Feature - Unit Tests', function () {
         test('LineNumberJump enabled - should create line number labels', function () {
@@ -167,15 +166,15 @@ suite('New Features Test Suite', function () {
 
             // Check that no word labels are within 3 characters of line end
             const document = window.activeTextEditor.document;
-            
+
             labels.forEach(label => {
                 const line = document.lineAt(label.lineNumber);
                 const lineLength = line.text.length;
-                
+
                 // If this is not an end-of-line label (column !== lineLength)
                 if (label.column !== lineLength) {
                     const distanceFromEnd = lineLength - label.column;
-                    assert.ok(distanceFromEnd >= 3, 
+                    assert.ok(distanceFromEnd >= 3,
                         `Word label at line ${label.lineNumber}, column ${label.column} should not be within 3 characters of line end (line length: ${lineLength})`);
                 }
             });
@@ -205,13 +204,13 @@ suite('New Features Test Suite', function () {
 
             // Count end-of-line labels (labels at the end of non-empty lines)
             let endOfLineLabels = 0;
-            
+
             visibleRanges.forEach(range => {
                 for (let lineNum = range.start.line; lineNum <= range.end.line; lineNum++) {
                     const line = document.lineAt(lineNum);
                     if (line.text.trim().length > 0) {
                         // Check if there's a label at the end of this line
-                        const labelAtEndOfLine = labels.find(label => 
+                        const labelAtEndOfLine = labels.find(label =>
                             label.lineNumber === lineNum && label.column === line.text.length
                         );
                         if (labelAtEndOfLine) {
@@ -241,8 +240,8 @@ suite('New Features Test Suite', function () {
                 settings
             };
 
-            const labelsWithOptimize = getWordLabels({ 
-                keys: [...settings.customKeys], 
+            const labelsWithOptimize = getWordLabels({
+                keys: [...settings.customKeys],
                 settings: { ...settings, optimizeEnd: true }
             }, window.activeTextEditor) as unknown as WordLabel[];
 
@@ -287,17 +286,17 @@ suite('New Features Test Suite', function () {
             assert.ok(endOfLineLabels.length > 0, 'Should create end-of-line labels');
 
             // Word labels should skip positions < 2 (lineNumberJump) and positions near line end (optimizeEnd)
-            const wordLabels = labels.filter(label => 
-                !/^\d{2}$/.test(label.keyLabel) && 
+            const wordLabels = labels.filter(label =>
+                !/^\d{2}$/.test(label.keyLabel) &&
                 label.column !== document.lineAt(label.lineNumber).text.length
             );
 
             wordLabels.forEach(label => {
                 assert.ok(label.column >= 2, `Word label should be at column >= 2, got ${label.column}`);
-                
+
                 const line = document.lineAt(label.lineNumber);
                 const distanceFromEnd = line.text.length - label.column;
-                assert.ok(distanceFromEnd >= 3, 
+                assert.ok(distanceFromEnd >= 3,
                     `Word label should not be within 3 characters of line end, distance: ${distanceFromEnd}`);
             });
         });

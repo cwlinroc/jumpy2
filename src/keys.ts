@@ -8,7 +8,7 @@ export function getAllKeys(customKeys: ReadonlyArray<string>) {
         lowerCharacters = Array.from({ length: 26 }, (_, i) => String.fromCharCode(aCode + i));
         upperCharacters = Array.from({ length: 26 }, (_, i) => String.fromCharCode(ACode + i));
     } else {
-        for (let key of customKeys) {
+        for (const key of customKeys) {
             lowerCharacters.push(key.toLowerCase());
             upperCharacters.push(key.toUpperCase());
         }
@@ -28,18 +28,18 @@ function _getKeySet(customKeys: ReadonlyArray<string>) {
     // A little ugly.
     // I used itertools.permutation in python.
     // Couldn't find a good one in npm.  Don't worry this takes < 1ms once.
-    for (let c1 of lowerCharacters) {
-        for (let c2 of lowerCharacters) {
+    for (const c1 of lowerCharacters) {
+        for (const c2 of lowerCharacters) {
             keys.push(c1 + c2);
         }
     }
-    for (let c1 of upperCharacters) {
-        for (let c2 of lowerCharacters) {
+    for (const c1 of upperCharacters) {
+        for (const c2 of lowerCharacters) {
             keys.push(c1 + c2);
         }
     }
-    for (let c1 of lowerCharacters) {
-        for (let c2 of upperCharacters) {
+    for (const c1 of lowerCharacters) {
+        for (const c2 of upperCharacters) {
             keys.push(c1 + c2);
         }
     }

@@ -116,17 +116,16 @@ suite('State Machine Test Suite', () => {
 
     suite('callback functionality', () => {
         test('calls onActiveChanged callback', () => {
-            let callbackModel = null;
+            let callbackActive: boolean | null = null;
             
             stateMachine.onActiveChanged((model) => {
-                callbackModel = model;
+                callbackActive = model.active;
             });
             
             const labels = ['aa', 'ab', 'ac'];
             stateMachine.loadLabels(labels);
             
-            assert.notStrictEqual(callbackModel, null);
-            assert.strictEqual((callbackModel as any).active, true);
+            assert.strictEqual(callbackActive, true);
         });
 
         test('calls onValidKeyEntered callback', () => {
