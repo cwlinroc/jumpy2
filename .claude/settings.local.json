@@ -1,11 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run compile:*)",
+      "Bash(pnpm run compile:*)",
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
       "Bash(npx eslint:*)",
-      "Bash(npm test)"
+      "Bash(pnpm test)",
+      "Bash(pnpm install *)"
     ],
     "deny": []
   }

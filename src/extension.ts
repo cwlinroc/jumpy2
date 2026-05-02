@@ -1,5 +1,3 @@
-import debounce from 'lodash.debounce';
-
 import {
     commands,
     DecorationOptions,
@@ -161,7 +159,15 @@ function _exit() {
     commands.executeCommand('setContext', 'jumpy2.jump-mode', false);
     _clearLabels();
 }
-const _exitDebounced = debounce(_exit, 350, { leading: true, trailing: false });
+const _exitDebounced = (() => {
+    let blocked = false;
+    return () => {
+        if (blocked) { return; }
+        blocked = true;
+        _exit();
+        setTimeout(() => { blocked = false; }, 350);
+    };
+})();
 
 function exit() {
     // reporter.sendTelemetryEvent('exit-manual');

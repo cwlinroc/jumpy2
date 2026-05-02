@@ -1,19 +1,12 @@
-import range from 'lodash.range';
-import moize from 'moize';
-
 export function getAllKeys(customKeys: ReadonlyArray<string>) {
     let lowerCharacters: Array<string> = [];
     let upperCharacters: Array<string> = [];
 
     if (!customKeys.length) {
-        lowerCharacters = range(
-            'a'.charCodeAt(0),
-            'z'.charCodeAt(0) + 1 /* for inclusive*/
-        ).map((c) => String.fromCharCode(c));
-        upperCharacters = range(
-            'A'.charCodeAt(0),
-            'Z'.charCodeAt(0) + 1 /* for inclusive*/
-        ).map((c) => String.fromCharCode(c));
+        const aCode = 'a'.charCodeAt(0);
+        const ACode = 'A'.charCodeAt(0);
+        lowerCharacters = Array.from({ length: 26 }, (_, i) => String.fromCharCode(aCode + i));
+        upperCharacters = Array.from({ length: 26 }, (_, i) => String.fromCharCode(ACode + i));
     } else {
         for (let key of customKeys) {
             lowerCharacters.push(key.toLowerCase());
@@ -54,11 +47,13 @@ function _getKeySet(customKeys: ReadonlyArray<string>) {
     return <ReadonlyArray<string>>keys;
 }
 
-const memoized = moize(_getKeySet, {
-    isSerialized: true,
-    serializer: (args: ReadonlyArray<string>) => [JSON.stringify(args[0])],
-});
-
+const _keySetCache = new Map<string, ReadonlyArray<string>>();
 export function getKeySet(customKeys: ReadonlyArray<string>) {
-    return memoized(customKeys);
+    const cacheKey = JSON.stringify(customKeys);
+    let cached = _keySetCache.get(cacheKey);
+    if (cached === undefined) {
+        cached = _getKeySet(customKeys);
+        _keySetCache.set(cacheKey, cached);
+    }
+    return cached;
 }

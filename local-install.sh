@@ -10,7 +10,7 @@ if [ -f "$extension_name" ]; then
 fi
 
 echo "installing packages"
-npm ci
+pnpm install --frozen-lockfile
 
 echo "Packaging extension..."
 npx @vscode/vsce package --no-dependencies
