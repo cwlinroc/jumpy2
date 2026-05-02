@@ -9,6 +9,9 @@ if [ -f "$extension_name" ]; then
     rm "$extension_name"
 fi
 
+echo "installing packages"
+npm ci
+
 echo "Packaging extension..."
 npx @vscode/vsce package --no-dependencies
 if [ $? -ne 0 ]; then
