@@ -597,13 +597,5 @@
         "publisherId": "40a002e4-474e-437f-bad9-4c60bbf13544",
         "isPreReleaseVersion": false
     },
-    "pricing": "Free",
-    "pnpm": {
-        "overrides": {
-            "diff": "8.0.4",
-            "serialize-javascript": "7.0.5",
-            "tough-cookie": "4.1.3",
-            "uuid@<14.0.0": ">=14.0.0"
-        }
-    }
+    "pricing": "Free"
 }
