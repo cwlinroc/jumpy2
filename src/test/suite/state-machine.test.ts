@@ -88,6 +88,40 @@ suite('State Machine Test Suite', () => {
     });
 
     suite('activation/deactivation', () => {
+        test('loading labels starts a fresh session after a partial key', () => {
+            stateMachine.loadLabels(['aa', 'ab']);
+            stateMachine.keyEntered(97);
+
+            stateMachine.loadLabels(['ba', 'bb']);
+
+            assert.strictEqual(stateMachine.getState().keysEntered, '');
+            assert.strictEqual(stateMachine.getState().status, 'Jump Mode!');
+            stateMachine.keyEntered(98);
+            assert.strictEqual(stateMachine.getState().keysEntered, 'b');
+            assert.strictEqual(stateMachine.isActive(), true);
+        });
+
+        test('exit discards a partial key before re-entering', () => {
+            stateMachine.loadLabels(['aa', 'ab']);
+            stateMachine.keyEntered(97);
+            stateMachine.exit();
+            stateMachine.loadLabels(['aa', 'ab']);
+
+            stateMachine.keyEntered(97);
+            assert.strictEqual(stateMachine.getState().keysEntered, 'a');
+            assert.strictEqual(stateMachine.isActive(), true);
+        });
+
+        test('a new session clears the previous jump result', () => {
+            stateMachine.loadLabels(['aa']);
+            stateMachine.keyEntered(97);
+            stateMachine.keyEntered(97);
+            assert.strictEqual(stateMachine.getState().lastJumped, 'aa');
+
+            stateMachine.loadLabels(['bb']);
+            assert.strictEqual(stateMachine.getState().lastJumped, '');
+        });
+
         test('reports active true after loading labels', () => {
             const labels = ['aa', 'ab', 'ac'];
             

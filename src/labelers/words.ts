@@ -78,7 +78,7 @@ const getWordLabels: Labeler = function (
     const optimizeEnd = env.settings.optimizeEnd;
     // const optimizeEnd = true;
     // const lineNumberJump = true;
-    const useLineNumberJump = lineNumberJump && editor === window.activeTextEditor;
+    const useLineNumberJump = lineNumberJump && editor === (env.activeEditor ?? window.activeTextEditor);
     const lineSet = new Set<number>();
 
     if (editor && !isExtensionPanel(editor)) {

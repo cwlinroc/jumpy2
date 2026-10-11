@@ -39,7 +39,7 @@ Keep this file focused on non-obvious agent guidance. For user-facing behavior a
 - `lodash.debounce`, `lodash.range`, and `moize` have been removed (stale/deprecated). Replacements are all native JS:
   - `lodash.range` → `Array.from({length: N}, ...)` in `src/keys.ts`
   - `moize` → plain `Map` cache with `JSON.stringify` key in `src/keys.ts`
-  - `lodash.debounce` (leading-only, no trailing) → inline IIFE throttle in `src/extension.ts`
+  - `lodash.debounce` → removed; jump-mode cleanup in `src/extension.ts` is immediate and repeat-safe so rapid sessions cannot suppress each other's exits.
 - `moize` must **not** be re-added as a dependency — it is deprecated upstream in favor of `micro-memoize`, and the memoization need is trivially served by a `Map`.
 
 ## Dependency Notes

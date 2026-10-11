@@ -99,6 +99,8 @@ export class JumpStateMachine {
 
     // Public methods (replacing Elm message handling)
     loadLabels(labels: Labels): void {
+        this.resetKeys();
+        this.model.lastJumped = '';
         this.model.labels = labels;
         this.turnOn();
         this.emitStateChange();

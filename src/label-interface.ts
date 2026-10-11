@@ -10,6 +10,7 @@ export interface Settings {
 export interface LabelEnvironment {
     keys: Array<string>;
     settings: Settings;
+    activeEditor?: TextEditor;
 }
 
 export interface Label {

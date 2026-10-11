@@ -8,6 +8,7 @@ If you find this extension useful, please consider supporting David.
 ## Fork-Specific Notes
 
 - The status bar (emoji jumper, "Jumpy: Jump Mode!" text, achievements) has been removed as a personal preference.
+- Jump labels start in the focused editor, then continue across other visible panes. Changing editors or leaving the window cancels jump mode; restarting always begins with fresh key input.
 - `StateModel.status` in `src/state-machine.ts` is retained intentionally — removing it would require a large refactor of the state machine and tests with no functional benefit. It still tracks internal state (`'Jump Mode!'`, `'No Match!'`, key-entered) and is asserted on in tests.
 
 ## License

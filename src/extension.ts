@@ -2,6 +2,7 @@ import {
     commands,
     DecorationOptions,
     ExtensionContext,
+    TextEditor,
     window,
     workspace,
 } from 'vscode';
@@ -47,13 +48,13 @@ const getSettings = (): Settings => {
 };
 
 let allLabels: Array<Label> = new Array<Label>();
+let sessionEditors: TextEditor[] = [];
+let checkeredActive = false;
 let isSelectionMode: boolean = false;
 
 // Subscribe to state machine events:
 stateMachine.onValidKeyEntered((keyLabel: string) => {
-    // This also broadcasts some empty strings in some cases.  Fine to ignore them.
-    if (keyLabel) {
-        _clearLabels();
+    if (stateMachine.isActive()) {
         _renderLabels(keyLabel);
     }
 });
@@ -68,32 +69,17 @@ stateMachine.onLabelJumped((keyLabel: string) => {
 
 stateMachine.onActiveChanged((model) => {
     if (!model.active) {
-        _exitDebounced();
+        _exit();
     }
 });
 
 function _renderLabels(enteredKey?: string) {
-    // TODO: another refactor to handle any "labeler" would be necessary this func ^ is too word centric atm.  As opposed to the last iteration of the Atom architecture
-    if (!getSettings().wordsPattern) {
-        return;
-    }
-
-    const environment: LabelEnvironment = {
-        keys: [...getKeySet(getSettings().customKeys)],
-        settings: getSettings(),
-    };
-
-    allLabels.length = 0; // Clear the array from previous runs.
-
-    window.visibleTextEditors.forEach((editor) => {
-        // Atom architecture (copied here) allows for other label providers:
-        const editorLabels = getWordLabels(environment, editor);
-        allLabels = [...allLabels, ...editorLabels];
-
+    sessionEditors.forEach((editor) => {
         const baseDecorations: DecorationOptions[] = [];
         const checkeredDecorations: DecorationOptions[] = [];
 
-        editorLabels
+        allLabels
+            .filter((label) => label.textEditor === editor)
             .filter((label) =>
                 enteredKey ? label.keyLabel.startsWith(enteredKey) : true
             )
@@ -102,7 +88,7 @@ function _renderLabels(enteredKey?: string) {
                 if (index % 2 === 0) {
                     baseDecorations.push(decoration);
                 } else {
-                    if (workspace.getConfiguration('jumpy2').get('checkered.active')) {
+                    if (checkeredActive) {
                         checkeredDecorations.push(decoration);
                     } else {
                         baseDecorations.push(decoration);
@@ -119,9 +105,29 @@ function _renderLabels(enteredKey?: string) {
 }
 
 function enterJumpMode() {
-    commands.executeCommand('setContext', 'jumpy2.jump-mode', true);
+    const activeEditor = window.activeTextEditor;
+    if (!activeEditor) {
+        exit();
+        return;
+    }
 
-    _renderLabels();
+    _clearLabels();
+    const settings = getSettings();
+    const environment: LabelEnvironment = {
+        keys: [...getKeySet(settings.customKeys)],
+        settings,
+        activeEditor,
+    };
+    // VS Code does not guarantee that visibleTextEditors starts with the focused editor.
+    sessionEditors = [activeEditor, ...window.visibleTextEditors.filter((editor) => editor !== activeEditor)];
+    // Keep this mapping stable while filtering/resetting a session's labels.
+    allLabels = sessionEditors.flatMap((editor) => getWordLabels(environment, editor));
+    checkeredActive = workspace.getConfiguration('jumpy2').get<boolean>('checkered.active') ?? false;
+    if (allLabels.length === 0) {
+        exit();
+        return;
+    }
+    commands.executeCommand('setContext', 'jumpy2.jump-mode', true);
     stateMachine.loadLabels(allLabels.map((label) => label.keyLabel));
 }
 
@@ -145,12 +151,10 @@ function sendKey(key: string) {
 function reset() {
     // reporter.sendTelemetryEvent('reset');
     stateMachine.reset();
-    _clearLabels();
-    _renderLabels();
 }
 
 function _clearLabels() {
-    window.visibleTextEditors.forEach((editor) => {
+    new Set([...sessionEditors, ...window.visibleTextEditors]).forEach((editor) => {
         editor.setDecorations(wordLabelBaseDecorationType, []);
         editor.setDecorations(wordLabelCheckeredDecorationType, []);
     });
@@ -159,16 +163,14 @@ function _clearLabels() {
 function _exit() {
     commands.executeCommand('setContext', 'jumpy2.jump-mode', false);
     _clearLabels();
+    // Do not discard allLabels here: the state machine emits inactive before the jump callback.
 }
-const _exitDebounced = (() => {
-    let blocked = false;
-    return () => {
-        if (blocked) { return; }
-        blocked = true;
-        _exit();
-        setTimeout(() => { blocked = false; }, 350);
-    };
-})();
+
+function cancelJumpMode() {
+    if (stateMachine.isActive()) {
+        exit();
+    }
+}
 
 function exit() {
     // reporter.sendTelemetryEvent('exit-manual');
@@ -223,32 +225,41 @@ export function activate(context: ExtensionContext) {
         ),
     );
 
-    /* NOTE: Effectively I want "all" events.  I don't think such an event exists,
-    and even if it did it wouldn't be future proof. Luckily, things like command pallette,
-    finds, etc...work nicely with jumpy atm, despite not clearing them.
-    Instead, upon exit of these you can resume where Jumpy left off! */
+    // Cancel both the UI and state machine when the editor layout changes.
     const events = [
         window.onDidChangeActiveTerminal,
         window.onDidChangeActiveTextEditor,
         window.onDidChangeTextEditorOptions,
         window.onDidChangeTextEditorViewColumn,
         window.onDidChangeVisibleTextEditors,
-        window.onDidChangeWindowState,
         window.onDidCloseTerminal,
         window.onDidOpenTerminal,
         workspace.onDidOpenTextDocument,
-        // The following are too aggressive, they make the keymapping troubleshooting feature useless as jumpy clears.
-        // They also probably are responsible for some of the occasional "loading" clearing/exiting I was experiencing.  I think they would conflict with for example a job being streamed on terminal
-        window.onDidChangeTextEditorSelection, // need these for now unfortunately.  Comment them out if keymap troubleshooting is required
-        window.onDidChangeTextEditorVisibleRanges,
-        // workspace.onDidChangeTextDocument,
     ];
 
-    subscriptions.push(...events.map((event) => event(() => _exitDebounced())));
+    subscriptions.push(
+        ...events.map((event) => event(cancelJumpMode)),
+        window.onDidChangeWindowState((state) => {
+            // Activity/idle notifications and focus gain must not cancel a new session.
+            if (!state.focused) {
+                cancelJumpMode();
+            }
+        }),
+        window.onDidChangeTextEditorSelection((event) => {
+            if (sessionEditors.includes(event.textEditor)) {
+                cancelJumpMode();
+            }
+        }),
+        window.onDidChangeTextEditorVisibleRanges((event) => {
+            if (sessionEditors.includes(event.textEditor)) {
+                cancelJumpMode();
+            }
+        }),
+    );
 }
 
 export function deactivate() {
-    _exit();
+    exit();
     // NOTE: subscriptions will automatically be disposed of
 }
 
