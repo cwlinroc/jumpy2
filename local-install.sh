@@ -16,7 +16,7 @@ echo "Building extension..."
 pnpm run compile
 
 echo "Packaging extension..."
-npx @vscode/vsce package --no-dependencies
+pnpm exec vsce package --no-dependencies
 
 echo "Installing extension $extension_name..."
 code --install-extension "$extension_name"
